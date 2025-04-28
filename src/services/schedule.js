@@ -7,16 +7,20 @@ const mdEscape = (text) =>
   text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 
 export function getScheduleText() {
-  if (!db.data.schedule?.length) {
-    return MESSAGES.EMPTY_SCHEDULE;
-  }
+    if (!db.data.schedule?.length) {
+        return MESSAGES.EMPTY_SCHEDULE;
+    }
 
-  const lines = db.data.schedule.map(({ date, users }) => {
-    const safeDate  = formatDate(date).replace(/\./g, '\.');
-    const safeUsers = users.map(mdEscape).join(', ');
+    const today = getToday();
+    const lines = db.data.schedule
+        .filter(({ date }) => dayjs(date).startOf("day").diff(today, "day") >= 0)
+        .reverse()
+        .map(({ date, users }) => {
+            const safeDate  = formatDate(date).replace(/\./g, '\.');
+            const safeUsers = users.map(mdEscape).join(', ');
 
-    return `${safeDate}: ${safeUsers}`;
-  });
+        return `${safeDate}: ${safeUsers}`;
+    });
 
   return `📅 *Поточний розклад:*\n${lines.join('\n')}`;
 }
